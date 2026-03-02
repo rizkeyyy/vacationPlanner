@@ -34,7 +34,7 @@ Ikuti langkah berikut untuk menjalankan proyek dari hasil *Clone Repository*:
 ```bash
 git clone <URL_REPOS_ANDA>
 cd Voyager_ai
-
+```
 ### Step 2: Backend Setup
 cd backend
 python -m venv venv
@@ -74,4 +74,3 @@ Voyager_ai/
 └── README.md           # Documentation (File ini)
 ```
 
----
