@@ -81,3 +81,19 @@ Key achievements include:
 3.  **Visual Output:** Generation of downloadable digital invoices.
 
 The ability to handle booking transactions, generate documents, and retrieve past data proves the viability of this architecture for enterprise-level travel applications.
+
+## 6. How to Run
+
+1.  **Install Dependencies:**
+    ```bash
+    cd backend
+    pip install -r requirements.txt
+    ```
+2.  **Run Backend Server:**
+    ```bash
+    uvicorn main:app --reload
+    ```
+3.  **Launch Frontend:**
+    Open `frontend/dashboard.html` in your browser.
+
+---
