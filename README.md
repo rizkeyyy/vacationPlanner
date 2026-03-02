@@ -36,30 +36,42 @@ git clone <URL_REPOS_ANDA>
 cd Voyager_ai
 ```
 ### Step 2: Backend Setup
+```bash
 cd backend
 python -m venv venv
-
+```
 # Aktivasi Environment (Windows)
+```bash
 .\venv\Scripts\activate
+```
 # Aktivasi Environment (Mac/Linux)
+```bash
 source venv/bin/activate
+```
 
 # Install Dependencies (Versi Diet/Ringan)
+```bash
 pip install -r requirements.txt
+```
 
 ### Step 3: API Configuration
 Buat file .env di dalam folder backend/ dan masukkan API Key Groq Anda:
+```bash
 GROQ_API_KEY=gsk_xxxxxxxxxxxxxxxxxxxx
+```
 
 ### Step 4: Run Application
-Jalankan Backend: uvicorn main:app --reload
+Jalankan Backend:
+```bash
+uvicorn main:app --reload
+```
 
 Buka Frontend:
 Buka file frontend/dashboard.html di browser (Chrome/Edge direkomendasikan).
 
 ## 3. Installation & How to Run
 Project Structure
-```
+```bash
 Voyager_ai/
 ├── backend/
 │   ├── app/
