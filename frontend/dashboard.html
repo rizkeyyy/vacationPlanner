@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyager AI Workspace</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Animations */
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Invoice Ripped Edge Effect */
+        .receipt-edge {
+            background-image: linear-gradient(135deg, transparent 6px, #fff 0), linear-gradient(-135deg, transparent 6px, #fff 0);
+            background-position: left-bottom;
+            background-repeat: repeat-x;
+            background-size: 12px 12px;
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { voyager: { 500: '#10b981', 600: '#059669', 900: '#064e3b' }, dark: { 800: '#1f2937', 900: '#111827', 950: '#0b0f19' } } } }
+        }
+    </script>
+</head>
+
+<body class="bg-dark-950 text-gray-200 h-screen overflow-hidden flex">
+
+    <aside class="w-64 bg-dark-900 border-r border-gray-800 flex flex-col hidden md:flex">
+        <div class="p-6 flex items-center gap-3">
+            <div
+                class="w-10 h-10 bg-voyager-500 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-voyager-500/20">
+                <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight text-white">Voyager AI</h1>
+                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Enterprise</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-4 py-4 space-y-2">
+            <a href="#"
+                class="flex items-center gap-3 px-4 py-3 bg-voyager-500/10 text-voyager-500 rounded-xl border border-voyager-500/20">
+                <i class="fa-solid fa-comments"></i> <span class="font-medium">Planner Chat</span>
+            </a>
+            <button onclick="openSettings()"
+                class="w-full flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-gray-100 rounded-xl transition text-left">
+                <i class="fa-solid fa-sliders"></i> <span class="font-medium">Setup Context</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-gray-800">
+            <div class="flex items-center gap-3 p-3 bg-gray-800/50 rounded-xl border border-gray-700 cursor-pointer"
+                onclick="openSettings()">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm"
+                    id="sidebarAvatar">R</div>
+                <div class="overflow-hidden">
+                    <p class="text-sm font-semibold truncate text-white" id="sidebarName">Rizki Ramadhan</p>
+                    <p class="text-xs text-gray-400 truncate">Pro Account</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 bg-dark-950 relative">
+        <div id="chatBox" class="flex-1 overflow-y-auto p-6 space-y-6 pb-32 scroll-smooth">
+            <div id="initialGreeting" class="fade-in"></div>
+        </div>
+
+        <div class="absolute bottom-0 w-full p-6 bg-gradient-to-t from-dark-950 via-dark-950 to-transparent z-10">
+            <div id="loadingIndicator" class="hidden mb-2 ml-4 flex items-center gap-2 text-xs text-gray-400">
+                <div class="flex gap-1">
+                    <div class="w-1.5 h-1.5 bg-voyager-500 rounded-full typing-dot"></div>
+                    <div class="w-1.5 h-1.5 bg-voyager-500 rounded-full typing-dot"></div>
+                    <div class="w-1.5 h-1.5 bg-voyager-500 rounded-full typing-dot"></div>
+                </div>
+                <span>Voyager sedang memproses...</span>
+            </div>
+
+            <div class="max-w-4xl mx-auto relative group">
+                <input type="text" id="userInput"
+                    class="w-full bg-gray-800/80 backdrop-blur text-gray-200 placeholder-gray-500 border border-gray-700 rounded-2xl pl-6 pr-14 py-4 focus:outline-none focus:border-voyager-500 focus:ring-1 focus:ring-voyager-500 shadow-2xl transition-all"
+                    placeholder="Contoh: Cari hotel di Bali dan tiket pesawat..." onkeypress="handleEnter(event)">
+                <button onclick="sendMessage()"
+                    class="absolute right-2 top-2 w-10 h-10 bg-voyager-600 hover:bg-voyager-500 text-white rounded-xl flex items-center justify-center transition shadow-lg active:scale-95"><i
+                        class="fa-solid fa-paper-plane text-sm"></i></button>
+            </div>
+        </div>
+    </main>
+
+    <aside class="w-80 bg-dark-900 border-l border-gray-800 hidden lg:flex flex-col p-6 space-y-6">
+        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Live Context</h2>
+        <div class="bg-gray-800 rounded-xl p-5 border border-gray-700 relative overflow-hidden group">
+            <p class="text-xs text-gray-400">Active Budget</p>
+            <p class="text-2xl font-bold text-white mt-1" id="displayBudget">Rp 1.500.000</p>
+            <div class="w-full bg-gray-700 h-1.5 rounded-full mt-3">
+                <div class="bg-voyager-500 h-1.5 rounded-full" style="width: 70%"></div>
+            </div>
+        </div>
+        <div class="bg-gray-800 rounded-xl p-5 border border-gray-700">
+            <p class="text-xs text-gray-400 mb-3">Interests</p>
+            <div class="flex flex-wrap gap-2" id="displayInterests"></div>
+        </div>
+    </aside>
+
+    <div id="settingsModal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2"><i
+                    class="fa-solid fa-sliders text-voyager-500"></i> Setup Context</h2>
+            <div class="space-y-4">
+                <input type="text" id="inputName"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-voyager-500"
+                    placeholder="Nama">
+                <input type="text" id="inputBudget"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-voyager-500"
+                    placeholder="Budget">
+                <input type="text" id="inputInterests"
+                    class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:border-voyager-500"
+                    placeholder="Interest">
+            </div>
+            <button onclick="saveSettings()"
+                class="w-full mt-6 bg-voyager-600 text-white font-bold py-3 rounded-xl hover:bg-voyager-500 transition">Update
+                & Sync</button>
+        </div>
+    </div>
+
+    <script>
+        let userProfile = { name: "Rizki Ramadhan", budget: "1.500.000", interests: "Pool, WiFi, Nature" };
+
+        function renderUI() {
+            document.getElementById('sidebarName').innerText = userProfile.name;
+            document.getElementById('sidebarAvatar').innerText = userProfile.name.charAt(0);
+            document.getElementById('displayBudget').innerText = "Rp " + userProfile.budget;
+            document.getElementById('inputName').value = userProfile.name;
+            document.getElementById('inputBudget').value = userProfile.budget;
+            document.getElementById('inputInterests').value = userProfile.interests;
+            document.getElementById('displayInterests').innerHTML = userProfile.interests.split(',').map(tag => `<span class="text-[10px] bg-gray-800 text-gray-300 px-2 py-1 rounded border border-gray-700">${tag.trim()}</span>`).join('');
+            document.getElementById('initialGreeting').innerHTML = `<div class="flex gap-4 max-w-3xl"><div class="w-10 h-10 rounded-full bg-voyager-600 flex-shrink-0 flex items-center justify-center text-white"><i class="fa-solid fa-robot"></i></div><div class="bg-gray-800 p-5 rounded-2xl rounded-tl-none border border-gray-700 text-gray-300 text-sm shadow-sm"><p class="mb-2 italic">Ready to plan your next journey, <strong>${userProfile.name.split(' ')[0]}</strong>?</p><p class="text-xs text-gray-500">I have access to your calendar and preferences. What are we planning today?</p></div></div>`;
+        }
+
+        function triggerAction(actionText) {
+            const inputField = document.getElementById("userInput");
+            inputField.value = actionText;
+            sendMessage();
+        }
+
+        // --- RENDERERS ---
+
+        function renderHotelCards(jsonData) {
+            try {
+                const hotels = JSON.parse(jsonData);
+                let html = '<div class="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x scrollbar-hide">';
+                hotels.forEach(h => {
+                    html += `
+                    <div class="min-w-[260px] w-[260px] bg-white rounded-2xl shadow-lg snap-center border border-gray-100 flex flex-col overflow-hidden">
+                        <div class="h-36 relative"><img src="${h.image}" class="w-full h-full object-cover"><div class="absolute top-2 right-2 bg-white/90 px-2 py-0.5 rounded text-[10px] font-bold text-gray-800">★ ${h.rating}</div></div>
+                        <div class="p-4 flex flex-col flex-1"><h3 class="font-bold text-gray-800 text-sm truncate">${h.name}</h3><p class="text-[10px] text-gray-400 mb-2">${h.location}</p><div class="mt-auto pt-3 border-t border-gray-50 flex justify-between items-center"><div><p class="text-[10px] text-gray-400 uppercase">Start from</p><p class="font-bold text-emerald-600 text-sm">Rp ${Math.floor(h.price / 1000)}k</p></div><button onclick="triggerAction('Booking ${h.name} sekarang')" class="bg-gray-900 text-white text-[10px] px-3 py-1.5 rounded-lg hover:bg-emerald-600">Pilih</button></div></div>
+                    </div>`;
+                });
+                return html + '</div>';
+            } catch (e) { return ""; }
+        }
+
+        function renderFlightCards(jsonData) {
+            try {
+                const flights = JSON.parse(jsonData);
+                let html = '<div class="flex flex-col gap-3 mt-2">';
+                flights.forEach(f => {
+                    const times = f.time.split(' - ');
+                    html += `
+                    <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm relative overflow-hidden group">
+                        <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-lg border border-gray-50 p-1.5 flex items-center justify-center bg-white shadow-sm"><img src="${f.logo}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/723/723955.png'" class="w-full h-full object-contain"></div><div><h4 class="font-bold text-gray-800 text-xs">${f.airline}</h4><span class="text-[9px] font-mono text-gray-400">${f.flight_code}</span></div><div class="ml-auto text-right text-emerald-600 font-bold text-sm">Rp ${Math.floor(f.price / 1000)}k</div></div>
+                        <div class="flex items-center justify-between bg-gray-50/50 rounded-lg p-3 border border-dashed border-gray-200"><div class="text-center font-bold text-gray-800 text-sm">${times[0]}<br><span class="text-[9px] text-gray-400">JKT</span></div><div class="flex-1 flex flex-col items-center"><div class="w-full h-[1px] bg-gray-200 relative"><i class="fa-solid fa-plane absolute top-[-6px] left-[50%] translate-x-[-50%] text-[10px] text-gray-300"></i></div><p class="text-[9px] text-gray-300 mt-2 italic">Direct</p></div><div class="text-center font-bold text-gray-800 text-sm">${times[1]}<br><span class="text-[9px] text-gray-400">DPS</span></div></div>
+                        <button onclick="triggerAction('Booking tiket ${f.airline} sekarang')" class="w-full mt-3 bg-gray-900 text-white text-[10px] font-bold py-2 rounded-lg hover:bg-emerald-600 transition">Booking Tiket</button>
+                    </div>`;
+                });
+                return html + '</div>';
+            } catch (e) { return ""; }
+        }
+
+        function renderBookingCard(jsonData) {
+            try {
+                const data = JSON.parse(jsonData);
+                const invId = "INV-" + Math.floor(Math.random() * 90000 + 10000);
+                const date = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                return `
+                <div class="flex flex-col items-center mt-2">
+                    <div id="${invId}" class="bg-white text-gray-800 p-6 w-[300px] shadow-2xl relative font-mono text-[11px] border-t-4 border-voyager-600 receipt-edge pb-10">
+                        <div class="text-center mb-5"><h2 class="font-black text-lg tracking-tighter italic text-gray-900">VOYAGER.REC</h2><p class="text-[8px] text-gray-400 uppercase tracking-widest">Digital Payment Verified</p></div>
+                        <div class="space-y-1 border-b border-gray-100 pb-3 mb-3 text-[9px]"><div class="flex justify-between text-gray-400"><span>ORDER ID</span><span class="text-gray-900">${invId}</span></div><div class="flex justify-between text-gray-400"><span>DATE</span><span class="text-gray-900">${date}</span></div></div>
+                        <div class="mb-4"><p class="text-[8px] text-gray-400 mb-0.5">CUSTOMER</p><p class="font-bold text-sm">${data.guest_name}</p></div>
+                        <div class="space-y-2 mb-6"><div class="flex justify-between items-start"><div><p class="font-bold uppercase text-[10px]">${data.hotel_name}</p><p class="text-[8px] text-gray-400">Confirmed & Secured</p></div><span class="font-bold text-voyager-600 uppercase">Paid</span></div></div>
+                        <div class="text-center"><img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${invId}" class="w-20 h-20 mx-auto mb-2 opacity-80 mix-blend-multiply"><p class="text-[8px] text-gray-400 uppercase tracking-widest">Scan for Check-in Info</p></div>
+                    </div>
+                    <button onclick="downloadInvoice('${invId}')" class="mt-3 flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-[10px] px-4 py-2 rounded-full border border-white/10 transition-all"><i class="fa-solid fa-download"></i> Download PNG</button>
+                </div>`;
+            } catch (e) { return ""; }
+        }
+
+        function downloadInvoice(id) {
+            const element = document.getElementById(id);
+            html2canvas(element, { scale: 3, backgroundColor: null }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `${id}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        // --- CORE CHAT LOGIC ---
+
+        async function sendMessage() {
+            const input = document.getElementById("userInput");
+            const chatBox = document.getElementById("chatBox");
+            const loading = document.getElementById("loadingIndicator");
+            const message = input.value.trim();
+            if (!message) return;
+
+            chatBox.innerHTML += `<div class="flex gap-4 max-w-3xl ml-auto flex-row-reverse fade-in"><div class="w-10 h-10 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center text-white"><i class="fa-solid fa-user"></i></div><div class="bg-voyager-600 text-white p-4 rounded-2xl rounded-tr-none shadow-lg text-sm leading-relaxed">${message}</div></div>`;
+            input.value = "";
+            loading.style.display = "flex";
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/chat", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message, user_profile: userProfile })
+                });
+                const data = await response.json();
+                let rawReply = data.reply;
+                let finalHtml = "";
+
+                // --- POINT 1: PEMBERSIH MARKER ---
+                let cleanText = rawReply
+                    .replace(/:::HOTEL_DATA:::.*?:::END_DATA:::/gs, "")
+                    .replace(/:::FLIGHT_DATA:::.*?:::END_DATA:::/gs, "")
+                    .replace(/:::BOOKING_DATA:::.*?:::END_DATA:::/gs, "")
+                    .replace(/:::CALENDAR_DATA:::.*?:::END_DATA:::/gs, "")
+                    .trim();
+
+                if (cleanText) finalHtml += `<p class="mb-4 text-gray-300 leading-relaxed">${cleanText.replace(/\n/g, '<br>')}</p>`;
+
+                // --- PARSERS ---
+                if (rawReply.includes(":::CALENDAR_DATA:::")) {
+                    const parts = rawReply.split(":::CALENDAR_DATA:::");
+                    const calData = JSON.parse(parts[1].split(":::END_DATA:::")[0]);
+                    finalHtml += `<div class="bg-blue-900/30 border border-blue-500/30 p-4 rounded-xl flex items-center gap-3 mb-4 max-w-sm"><div class="bg-blue-500/20 p-2 rounded-lg text-blue-400"><i class="fa-solid fa-calendar-check text-sm"></i></div><div><p class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Schedule Check</p><p class="text-xs text-gray-200">${calData.notes || "Ready to go!"}</p></div></div>`;
+                }
+                if (rawReply.includes(":::HOTEL_DATA:::")) {
+                    const parts = rawReply.split(":::HOTEL_DATA:::");
+                    finalHtml += renderHotelCards(parts[1].split(":::END_DATA:::")[0]);
+                }
+                if (rawReply.includes(":::FLIGHT_DATA:::")) {
+                    const parts = rawReply.split(":::FLIGHT_DATA:::");
+                    finalHtml += renderFlightCards(parts[1].split(":::END_DATA:::")[0]);
+                }
+                if (rawReply.includes(":::BOOKING_DATA:::")) {
+                    const parts = rawReply.split(":::BOOKING_DATA:::");
+                    finalHtml += renderBookingCard(parts[1].split(":::END_DATA:::")[0]);
+                }
+
+                if (!finalHtml) finalHtml = rawReply.replace(/\n/g, '<br>');
+
+                chatBox.innerHTML += `<div class="flex gap-4 max-w-3xl fade-in mt-6"><div class="w-10 h-10 rounded-full bg-voyager-600 flex-shrink-0 flex items-center justify-center text-white"><i class="fa-solid fa-robot"></i></div><div class="space-y-1 w-full overflow-hidden"><div class="flex items-center gap-2 font-bold text-gray-300 text-xs"><span>Voyager AI</span></div><div class="bg-gray-800 p-5 rounded-2xl rounded-tl-none border border-gray-700 text-gray-300 leading-relaxed shadow-sm w-fit max-w-full">${finalHtml}</div></div></div>`;
+
+            } catch (error) { console.error(error); }
+            loading.style.display = "none";
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleEnter(e) { if (e.key === "Enter") sendMessage(); }
+        function openSettings() { document.getElementById('settingsModal').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.add('hidden'); }
+        function saveSettings() {
+            userProfile.name = document.getElementById('inputName').value || userProfile.name;
+            userProfile.budget = document.getElementById('inputBudget').value || userProfile.budget;
+            userProfile.interests = document.getElementById('inputInterests').value || userProfile.interests;
+            renderUI();
+            closeSettings();
+        }
+        renderUI();
+    </script>
+</body>
+
+</html>
